@@ -53,4 +53,5 @@ begin
     @constraint(model, sum{D[k]*C[j][k]*f[j][k], j=1:@NUM_CENTERS, K=1:@NUM_ITEMS} <= B_1)
     @constraint(model sum{f[j] <= 1})
     @constraint(model f >= 0)
+    sdfg
 end

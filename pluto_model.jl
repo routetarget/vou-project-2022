@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ e75deb42-494c-4285-a62c-d1d779384b57
-using JuMP, DataFrames, HiGHS, LinearAlgebra, CSV
+using JuMP, DataFrames, HiGHS, LinearAlgebra, CSV, Statistics
 
 # ╔═╡ f3cbbf9e-86e6-4b56-846b-b64c9cf85780
 # load data 
@@ -37,6 +37,10 @@ begin
 	    return round(Int, d)
 	end
 
+	function find_centroid(lat,lon)
+		
+	end
+
 	dm = LinearAlgebra.LowerTriangular([haversine(events.Latitude[i], events.Longitude[i], events.Latitude[j], events.Longitude[j]) for i in 1:n, j in 1:n])
 
 	model = Model(HiGHS.Optimizer)
@@ -50,32 +54,33 @@ begin
 	@objective(model, Min, sum(dm[i, j] * z[i, j] for i in 1:n, j in 1:i));
 	optimize!(model)
 
-	events.Group = zeros(n)
-
+	events.Group = zeros(n);
+	
 	for i in 1:n, j in 1:k
 	    if round(Int, value(x[i, j])) == 1
 	        events.Group[i] = j
 	    end
 	end
-	
-	for group in DataFrames.groupby(events, :Group)
-	    @show group
-	    println("")
-	    @show sum(group.Deaths)
-	    println("")
-	end
-	
 end
+
+# ╔═╡ e9921d68-d992-4da8-b73e-81cb47a12048
+begin
+	events_grouped = groupby(events, :Group);
+	epicenters = combine(events_grouped, :Latitude => mean, :Longitude => mean)
+end
+	
 
 # ╔═╡ d24d4a18-0566-4d4b-b64b-464be7cb8237
-
-struct Item
-	#cost::Int
-	criticality::Float64
-	#LR::Int
-	#UR::Int
+## Definice itemu a ostatnich 
+begin
+	struct Item
+		#cost::Int
+		criticality::Float64
+		#LR::Int
+		#UR::Int
+	end
+	num_cov_levels = 3;
 end
-
 
 # ╔═╡ 92ab830e-0aa2-4ef6-a4bb-25aee2ba7799
 begin
@@ -84,10 +89,7 @@ begin
 end
 
 
-# ╔═╡ 826a8142-12a9-49a3-9b2b-b0d7448274c9
-num_cov_levels = 3;
-
-# ╔═╡ 3ceb7f71-079e-4672-895c-aa0f04bd80a1
+# ╔═╡ 64a9bce3-51f9-429d-bb46-127285450727
 #x = collect(LinRange(1,num_cov_levels,num_cov_levels))
 
 # ╔═╡ 943665a0-4a86-43a5-b193-b2d0a1682050
@@ -104,6 +106,7 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
 CSV = "~0.10.7"
@@ -118,7 +121,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.3"
 manifest_format = "2.0"
-project_hash = "0d5c4aa9605f8201f5fc4c7d7d557738ab1b339d"
+project_hash = "95e4df588ffccadf9915acb0d4fa1bd48d06d95c"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -617,10 +620,10 @@ version = "17.4.0+0"
 # ╠═e75deb42-494c-4285-a62c-d1d779384b57
 # ╠═f3cbbf9e-86e6-4b56-846b-b64c9cf85780
 # ╠═eef3114f-196f-4642-9968-c9ff29a073a5
+# ╠═e9921d68-d992-4da8-b73e-81cb47a12048
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
 # ╠═92ab830e-0aa2-4ef6-a4bb-25aee2ba7799
-# ╠═826a8142-12a9-49a3-9b2b-b0d7448274c9
-# ╠═3ceb7f71-079e-4672-895c-aa0f04bd80a1
+# ╠═64a9bce3-51f9-429d-bb46-127285450727
 # ╠═943665a0-4a86-43a5-b193-b2d0a1682050
 # ╠═2589c79d-adb0-4da6-8e4f-23b96c0f4f42
 # ╟─00000000-0000-0000-0000-000000000001

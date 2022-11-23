@@ -37,7 +37,7 @@ begin
 	    return round(Int, d)
 	end
 
-	function find_centroid(lat,lon)
+	function find_centroid(lat,lon);
 		
 	end
 
@@ -68,35 +68,11 @@ begin
 	events_grouped = groupby(events, :Group);
 	epicenters = combine(events_grouped, :Latitude => mean, :Longitude => mean)
 end
-	
+#TODO impact levels --> Grouping by number of deaths? 
 
 # ╔═╡ d24d4a18-0566-4d4b-b64b-464be7cb8237
-## Definice itemu a ostatnich 
-begin
-	struct Item
-		#cost::Int
-		criticality::Float64
-		#LR::Int
-		#UR::Int
-	end
-	num_cov_levels = 3;
-end
-
-# ╔═╡ 92ab830e-0aa2-4ef6-a4bb-25aee2ba7799
-begin
-	itm1 = Item(0.8)
-	itm2 = Item(0.2)
-end
-
-
-# ╔═╡ 64a9bce3-51f9-429d-bb46-127285450727
-#x = collect(LinRange(1,num_cov_levels,num_cov_levels))
-
-# ╔═╡ 943665a0-4a86-43a5-b193-b2d0a1682050
-#y = collect(LinRange(1,0,num_cov_levels))
-
-# ╔═╡ 2589c79d-adb0-4da6-8e4f-23b96c0f4f42
-#cov_lvls = (x .=> y)
+## Definice itemu
+item = DataFrame(Benefits=[[0.8,0.4],[0.2,0.6]], LR=[48,72], UR=[96,144])
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -622,9 +598,5 @@ version = "17.4.0+0"
 # ╠═eef3114f-196f-4642-9968-c9ff29a073a5
 # ╠═e9921d68-d992-4da8-b73e-81cb47a12048
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
-# ╠═92ab830e-0aa2-4ef6-a4bb-25aee2ba7799
-# ╠═64a9bce3-51f9-429d-bb46-127285450727
-# ╠═943665a0-4a86-43a5-b193-b2d0a1682050
-# ╠═2589c79d-adb0-4da6-8e4f-23b96c0f4f42
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

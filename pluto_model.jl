@@ -8,9 +8,62 @@ using InteractiveUtils
 using JuMP, DataFrames, HiGHS, LinearAlgebra, CSV
 
 # ╔═╡ f3cbbf9e-86e6-4b56-846b-b64c9cf85780
+# load data 
 begin
+	events = CSV.read("data/data.csv",DataFrame, limit=20)
+end
 
-	events = DataFrame(CSV.file("data/data.csv"))	
+# ╔═╡ eef3114f-196f-4642-9968-c9ff29a073a5
+## Cluster envent locations 
+## https://jump.dev/JuMP.jl/stable/tutorials/linear/geographic_clustering/ 
+begin
+	n = size(events,1);
+	k = 4; # pocet clusteru podle research paperu 167
+	P = sum(events.Deaths)/k
+	"""
+    haversine(lat1, long1, lat2, long2, r = 6372.8)
+
+	Compute the haversine distance between two points on a sphere of radius `r`,
+	where the points are given by the latitude/longitude pairs `lat1/long1` and
+	`lat2/long2` (in degrees).
+	"""
+	function haversine(lat1, long1, lat2, long2, r = 6372.8)
+	    lat1, long1 = deg2rad(lat1), deg2rad(long1)
+	    lat2, long2 = deg2rad(lat2), deg2rad(long2)
+	    hav(a, b) = sin((b - a) / 2)^2
+	    inner_term = hav(lat1, lat2) + cos(lat1) * cos(lat2) * hav(long1, long2)
+	    d = 2 * r * asin(sqrt(inner_term))
+	    # Round distance to nearest kilometer.
+	    return round(Int, d)
+	end
+
+	dm = LinearAlgebra.LowerTriangular([haversine(events.Latitude[i], events.Longitude[i], events.Latitude[j], events.Longitude[j]) for i in 1:n, j in 1:n])
+
+	model = Model(HiGHS.Optimizer)
+	set_silent(model)
+	@variable(model, x[1:n, 1:k], Bin)
+	@constraint(model, [i = 1:n], sum(x[i, :]) == 1);
+	@variable(model, z[i = 1:n, j = 1:i], Bin)
+	for k in 1:k, i in 1:n, j in 1:i
+	    @constraint(model, z[i, j] >= x[i, k] + x[j, k] - 1)
+	end	
+	@objective(model, Min, sum(dm[i, j] * z[i, j] for i in 1:n, j in 1:i));
+	optimize!(model)
+
+	events.Group = zeros(n)
+
+	for i in 1:n, j in 1:k
+	    if round(Int, value(x[i, j])) == 1
+	        events.Group[i] = j
+	    end
+	end
+	
+	for group in DataFrames.groupby(events, :Group)
+	    @show group
+	    println("")
+	    @show sum(group.Deaths)
+	    println("")
+	end
 	
 end
 
@@ -35,13 +88,13 @@ end
 num_cov_levels = 3;
 
 # ╔═╡ 3ceb7f71-079e-4672-895c-aa0f04bd80a1
-x = collect(LinRange(1,num_cov_levels,num_cov_levels))
+#x = collect(LinRange(1,num_cov_levels,num_cov_levels))
 
 # ╔═╡ 943665a0-4a86-43a5-b193-b2d0a1682050
-y = collect(LinRange(1,0,num_cov_levels))
+#y = collect(LinRange(1,0,num_cov_levels))
 
 # ╔═╡ 2589c79d-adb0-4da6-8e4f-23b96c0f4f42
-cov_lvls = (x .=> y)
+#cov_lvls = (x .=> y)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -563,6 +616,7 @@ version = "17.4.0+0"
 # ╔═╡ Cell order:
 # ╠═e75deb42-494c-4285-a62c-d1d779384b57
 # ╠═f3cbbf9e-86e6-4b56-846b-b64c9cf85780
+# ╠═eef3114f-196f-4642-9968-c9ff29a073a5
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
 # ╠═92ab830e-0aa2-4ef6-a4bb-25aee2ba7799
 # ╠═826a8142-12a9-49a3-9b2b-b0d7448274c9

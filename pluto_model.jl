@@ -87,13 +87,19 @@ end
 epicenters
 
 # ╔═╡ 3cd30692-280e-4188-815c-fcab161a920d
-## lokace center
+## lokace center, na 1 scenar nalezi 1 centrum pro jednoduchost 
 begin
-	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), cost = 100000, capacity=100000)
+	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), price = 100000, capacity=100000, time = zeros(size(epicenters,1)), cost = zeros(size(epicenters,1)))
 	#posun = rand[-2:2];
 	for k=1:size(epicenters,1)
 		centers.lat[k] = epicenters.Latitude_mean[k] + rand(-2:2)
 		centers.lon[k] = epicenters.Longitude_mean[k] + rand(-2:2)
+	end
+	## time and cost from center to demand point 
+	for k=1:size(centers,1)
+		distance = haversine(epicenters.Latitude_mean[k],epicenters.Longitude_mean[k],centers.lat[k],centers.lon[k]);
+		centers.time[k] = 40 + (1/35)*distance;
+		centers.cost[k] = 5 * centers.time[k]; 
 	end
 end
 

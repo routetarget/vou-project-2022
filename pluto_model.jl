@@ -65,14 +65,30 @@ end
 
 # ╔═╡ e9921d68-d992-4da8-b73e-81cb47a12048
 begin
+	
 	events_grouped = groupby(events, :Group);
-	epicenters = combine(events_grouped, :Latitude => mean, :Longitude => mean)
+	epicenters = combine(events_grouped, :Latitude => mean, :Longitude => mean, :Deaths => sum)
+	epicenters.demand_itm1 = zeros(size(epicenters,1)); 
+	epicenters.demand_itm2 = zeros(size(epicenters,1));
+	for k=1:size(epicenters,1) 
+		epicenters.demand_itm1[k] = epicenters.Deaths_sum[k] * 0.3;
+		epicenters.demand_itm2[k] = epicenters.Deaths_sum[k] * 0.2;
+	end
 end
-#TODO impact levels --> Grouping by number of deaths? 
+#TODO impact levels --> Grouping by number of deaths, expected demands for items
 
 # ╔═╡ d24d4a18-0566-4d4b-b64b-464be7cb8237
 ## Definice itemu
-item = DataFrame(Benefits=[[0.8,0.4],[0.2,0.6]], LR=[48,72], UR=[96,144])
+begin
+	item = DataFrame(Benefits=[[0.8,0.4],[0.2,0.6]], LR=[48,72], UR=[96,144])
+end
+
+# ╔═╡ e1c2c2af-2eee-41b7-8bf0-9050d4082d70
+epicenters
+
+# ╔═╡ 3cd30692-280e-4188-815c-fcab161a920d
+## lokace center
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -598,5 +614,7 @@ version = "17.4.0+0"
 # ╠═eef3114f-196f-4642-9968-c9ff29a073a5
 # ╠═e9921d68-d992-4da8-b73e-81cb47a12048
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
+# ╠═e1c2c2af-2eee-41b7-8bf0-9050d4082d70
+# ╠═3cd30692-280e-4188-815c-fcab161a920d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

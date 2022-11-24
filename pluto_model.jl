@@ -80,7 +80,7 @@ end
 # ╔═╡ d24d4a18-0566-4d4b-b64b-464be7cb8237
 ## Definice itemu
 begin
-	item = DataFrame(Benefits=[[0.8,0.4],[0.2,0.6]], LR=[48,72], UR=[96,144])
+	item = DataFrame(Benefits=[[0.8,0.4],[0.2,0.6]], LR=[48,72], UR=[96,144], cost=[18,20], volume=1)
 end
 
 # ╔═╡ e1c2c2af-2eee-41b7-8bf0-9050d4082d70
@@ -88,7 +88,17 @@ epicenters
 
 # ╔═╡ 3cd30692-280e-4188-815c-fcab161a920d
 ## lokace center
+begin
+	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), cost = 100000, capacity=100000)
+	#posun = rand[-2:2];
+	for k=1:size(epicenters,1)
+		centers.lat[k] = epicenters.Latitude_mean[k] + rand(-2:2)
+		centers.lon[k] = epicenters.Longitude_mean[k] + rand(-2:2)
+	end
+end
 
+# ╔═╡ f8c3b134-a7c0-4eda-af88-0cdcde29a31c
+centers
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -616,5 +626,6 @@ version = "17.4.0+0"
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
 # ╠═e1c2c2af-2eee-41b7-8bf0-9050d4082d70
 # ╠═3cd30692-280e-4188-815c-fcab161a920d
+# ╠═f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

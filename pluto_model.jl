@@ -97,7 +97,7 @@ epicenters
 # ╔═╡ 3cd30692-280e-4188-815c-fcab161a920d
 ## lokace center, na 1 scenar nalezi 1 centrum pro jednoduchost zatim
 begin
-	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), price = 100000, capacity=100000, time = zeros(size(epicenters,1)), cost = zeros(size(epicenters,1)))
+	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), price = 100000, capacity=100000, time = zeros(size(epicenters,1)), item_cost = zeros(size(epicenters,1)))
 	#posun = rand[-2:2];
 	for k=1:size(epicenters,1)
 		centers.lat[k] = epicenters.Latitude_mean[k] + rand(-2:2)
@@ -107,7 +107,7 @@ begin
 	for k=1:size(centers,1)
 		distance = haversine(epicenters.Latitude_mean[k],epicenters.Longitude_mean[k],centers.lat[k],centers.lon[k]);
 		centers.time[k] = 40 + (1/35)*distance;
-		centers.cost[k] = 5 * centers.time[k]; 
+		centers.item_cost[k] = 5 * centers.time[k]; 
 	end
 	
 end
@@ -118,12 +118,14 @@ centers
 # ╔═╡ 5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 ## model
 begin
+	# todo item 2 sumy -- nevim jak to funguje 
 	# iteracni promenne 
 	s_epicenters = size(epicenters,1)
 	num_items = size(item,1)
 	num_centers = size(centers,1)
-
-	#f = zeros(s_epicenters,num_items)
+	B0 = 3500000; # pre disaster budget 
+	B1 = 10000000; # post distaster budget 
+	
 	
 	main_model = Model(HiGHS.Optimizer);
 	@variable(main_model,f[1:s_epicenters,1:num_centers,1:num_items]);
@@ -134,13 +136,13 @@ begin
 
 	@constraint(main_model,[s=1:s_epicenters,j=1:num_centers,k=1:num_items],f[s,j,k]*epicenters.demand_itm1[s] <= Q[k,j])
 	@constraint(main_model, [j=1:num_centers],sum(item.volume[k]*Q[k,j] for j=1:num_centers, k=1:num_items) <= centers.capacity[j])
-	#@constraint[main_model, [j=1:num_centers,k=1:num_items], sum()]
-	#@constraint
-	#@constraint
-	#@constraint
+	@constraint(main_model, [j=1:num_centers,k=1:num_items], sum(centers.price[j] + sum(Q[k,j]*item.cost[k] for j=1:num_centers, k=1:num_items) for j=1:num_centers, k=1:num_items) <= B0)
+	@constraint(main_model, sum(epicenters.demand_itm1[s]*centers.item_cost[s]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= B1)
+	@constraint(main_model, sum(f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= 1) ## TODO idk tady ma byt suma jen pres j 
 	@constraint(main_model, [s=1:s_epicenters,j=1:num_centers,k=1:num_items], f[s,j,k] >= 0)
-	#@constraint
+	
 	optimize!(main_model)
+	solution_summary(main_model, verbose=true)
 end
 
 # ╔═╡ 76ec14ca-8749-467c-b5fe-9a3f56415f04

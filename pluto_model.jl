@@ -124,15 +124,17 @@ begin
 	s_epicenters = size(epicenters,1)
 	num_items = size(item,1)
 	num_centers = size(centers,1)
+
+	#f = zeros(s_epicenters,num_items)
 	
 	main_model = Model(HiGHS.Optimizer);
-	@variable(main_model,f[s_epicenters,num_items,num_centers]);
-	@variable(main_model,Q,Int);
+	@variable(main_model,f[1:s_epicenters,1:num_centers,1:num_items]);
+	@variable(main_model,Q[1:num_items,1:num_centers],Int);
 	@variable(main_model,X,Bin);
 
-	@objective(main_model,Max, sum(sum(eachcol(model_frame))).*sum(sum(eachcol(items_m))).*f[s][j][k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items)
+	@objective(main_model,Max, sum(epicenters.probability[s]*epicenters.demand_itm1[s]*item.Benefits_L1[k]*item.LR[k]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items))
 
-	#@constraint
+	@constraint(f[1:s_epicenters,1:num_centers,1:num_items]*epicenters.demand_itm1[1:num_items] <= Q[1:num_items,1:num_centers])
 	#@constraint
 	#@constraint
 	#@constraint
@@ -143,14 +145,36 @@ begin
 	optimize!(main_model)
 end
 
+# ╔═╡ 76ec14ca-8749-467c-b5fe-9a3f56415f04
+
+
+# ╔═╡ 257fc0d2-8474-4645-a9a9-b970b813fa1b
+
+
+# ╔═╡ 7f6f3f9d-f578-4a2a-a14e-0d4eb4dba140
+epicenters.demand_itm1[1]
+
+# ╔═╡ 20c4e664-ffa7-4b6d-9702-68869ca7b727
+
+
 # ╔═╡ 63c36506-e421-4f3f-8761-997f02814be9
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	#FF = zeros(size(item,1),size(item,1),size(centers,1))
+	model4 = Model(HiGHS.Optimizer)
+	@variable(model4,FF[size(item,1),size(item,1),size(centers,1)])
+	@objective(model4,Max,
 for i=1:size(item,1)
 	for j=1:size(item,1)
-		for k=1:size(centers,1)
-			sum()
+		for k=1:size(centers,1) 					println(sum(epicenters.probability[k]*epicenters.demand_itm1[k]*item.Benefits_L1[j]*item.LR[j])*FF[i,j,k])
 		end
 	end
 end
+			)
+	
+end
+  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -680,6 +704,10 @@ version = "17.4.0+0"
 # ╠═3cd30692-280e-4188-815c-fcab161a920d
 # ╠═f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 # ╠═5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
+# ╠═76ec14ca-8749-467c-b5fe-9a3f56415f04
+# ╠═257fc0d2-8474-4645-a9a9-b970b813fa1b
+# ╠═7f6f3f9d-f578-4a2a-a14e-0d4eb4dba140
+# ╠═20c4e664-ffa7-4b6d-9702-68869ca7b727
 # ╠═63c36506-e421-4f3f-8761-997f02814be9
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

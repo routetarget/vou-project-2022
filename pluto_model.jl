@@ -70,10 +70,17 @@ begin
 	epicenters = combine(events_grouped, :Latitude => mean, :Longitude => mean, :Deaths => sum)
 	epicenters.demand_itm1 = zeros(size(epicenters,1)); 
 	epicenters.demand_itm2 = zeros(size(epicenters,1));
+	epicenters.probability = zeros(size(epicenters,1));
 	for k=1:size(epicenters,1) 
 		epicenters.demand_itm1[k] = epicenters.Deaths_sum[k] * 0.3;
 		epicenters.demand_itm2[k] = epicenters.Deaths_sum[k] * 0.2;
 	end
+	
+	## Probability of occurance -- je to jen na random
+	for k=1:size(epicenters,1)
+		epicenters.probability[k] = (epicenters.Deaths_sum[k])^(-1);
+	end
+	
 end
 #TODO impact levels --> Grouping by number of deaths, expected demands for items
 
@@ -87,7 +94,7 @@ end
 epicenters
 
 # ╔═╡ 3cd30692-280e-4188-815c-fcab161a920d
-## lokace center, na 1 scenar nalezi 1 centrum pro jednoduchost 
+## lokace center, na 1 scenar nalezi 1 centrum pro jednoduchost zatim
 begin
 	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), price = 100000, capacity=100000, time = zeros(size(epicenters,1)), cost = zeros(size(epicenters,1)))
 	#posun = rand[-2:2];
@@ -101,10 +108,31 @@ begin
 		centers.time[k] = 40 + (1/35)*distance;
 		centers.cost[k] = 5 * centers.time[k]; 
 	end
+
 end
 
 # ╔═╡ f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 centers
+
+# ╔═╡ 5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
+## model
+begin
+	main_model = Model(HiGHS.Optimizer);
+	@variable(main_model,f);
+	@variable(main_model,Q,Int);
+	@variable(main_model,X,Bin);
+
+	@objective(main_model,Max, sum())
+
+	@constraint
+	@constraint
+	@constraint
+	@constraint
+	@constraint
+	@constraint
+	@constraint
+	@constraint
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -129,7 +157,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.3"
 manifest_format = "2.0"
-project_hash = "95e4df588ffccadf9915acb0d4fa1bd48d06d95c"
+project_hash = "68e6824edf219c12da295048b02ec460a1d212a6"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -633,5 +661,6 @@ version = "17.4.0+0"
 # ╠═e1c2c2af-2eee-41b7-8bf0-9050d4082d70
 # ╠═3cd30692-280e-4188-815c-fcab161a920d
 # ╠═f8c3b134-a7c0-4eda-af88-0cdcde29a31c
+# ╠═5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

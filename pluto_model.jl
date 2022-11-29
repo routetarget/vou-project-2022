@@ -76,7 +76,7 @@ begin
 		epicenters.demand_itm2[k] = epicenters.Deaths_sum[k] * 0.2;
 	end
 	
-	## Probability of occurance -- je to jen na random
+	## Probability of occurance -- je to jen na random32.828232.8282
 	for k=1:size(epicenters,1)
 		epicenters.probability[k] = (epicenters.Deaths_sum[k])^(-1);
 	end
@@ -87,7 +87,8 @@ end
 # ╔═╡ d24d4a18-0566-4d4b-b64b-464be7cb8237
 ## Definice itemu
 begin
-	item = DataFrame(Benefits=[[0.8,0.4],[0.2,0.6]], LR=[48,72], UR=[96,144], cost=[18,20], volume=1)
+	item = DataFrame(Benefits_L1=[0.8,0.2], Benefits_L2=[0.4,0.6],LR=[48,72], UR=[96,144], cost=[18,20], volume=1)
+	items_m = DataFrame(Benefits_L1=[0.8,0.2], Benefits_L2=[0.4,0.6],LR=[48,72], UR=[96,144])
 end
 
 # ╔═╡ e1c2c2af-2eee-41b7-8bf0-9050d4082d70
@@ -109,6 +110,8 @@ begin
 		centers.cost[k] = 5 * centers.time[k]; 
 	end
 
+	model_frame = DataFrame(dem1=epicenters.demand_itm1, dem2=epicenters.demand_itm2, prob=epicenters.probability)
+	
 end
 
 # ╔═╡ f8c3b134-a7c0-4eda-af88-0cdcde29a31c
@@ -117,21 +120,36 @@ centers
 # ╔═╡ 5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 ## model
 begin
+	# iteracni promenne 
+	s_epicenters = size(epicenters,1)
+	num_items = size(item,1)
+	num_centers = size(centers,1)
+	
 	main_model = Model(HiGHS.Optimizer);
-	@variable(main_model,f);
+	@variable(main_model,f[s_epicenters,num_items,num_centers]);
 	@variable(main_model,Q,Int);
 	@variable(main_model,X,Bin);
 
-	@objective(main_model,Max, sum())
+	@objective(main_model,Max, sum(sum(eachcol(model_frame))).*sum(sum(eachcol(items_m))).*f[s][j][k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items)
 
-	@constraint
-	@constraint
-	@constraint
-	@constraint
-	@constraint
-	@constraint
-	@constraint
-	@constraint
+	#@constraint
+	#@constraint
+	#@constraint
+	#@constraint
+	#@constraint
+	#@constraint
+	#@constraint
+	#@constraint
+	optimize!(main_model)
+end
+
+# ╔═╡ 63c36506-e421-4f3f-8761-997f02814be9
+for i=1:size(item,1)
+	for j=1:size(item,1)
+		for k=1:size(centers,1)
+			sum()
+		end
+	end
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -662,5 +680,6 @@ version = "17.4.0+0"
 # ╠═3cd30692-280e-4188-815c-fcab161a920d
 # ╠═f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 # ╠═5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
+# ╠═63c36506-e421-4f3f-8761-997f02814be9
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

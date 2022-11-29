@@ -134,8 +134,8 @@ begin
 
 	@objective(main_model,Max, sum(epicenters.probability[s]*epicenters.demand_itm1[s]*item.Benefits_L1[k]*item.LR[k]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items))
 
-	@constraint(f[1:s_epicenters,1:num_centers,1:num_items]*epicenters.demand_itm1[1:num_items] <= Q[1:num_items,1:num_centers])
-	#@constraint
+	@constraint(main_model,[s=1:s_epicenters,j=1:num_centers,k=1:num_items],f[s,j,k]*epicenters.demand_itm1[s] <= Q[k,j])
+	@constraint(main_model, [j=1:num_centers],sum(item.volume[k]*Q[k,j] for j=1:num_centers, k=1:num_items) <= centers.capacity[j])
 	#@constraint
 	#@constraint
 	#@constraint
@@ -146,7 +146,7 @@ begin
 end
 
 # ╔═╡ 76ec14ca-8749-467c-b5fe-9a3f56415f04
-
+centers.capacity[1]
 
 # ╔═╡ 257fc0d2-8474-4645-a9a9-b970b813fa1b
 

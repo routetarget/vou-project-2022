@@ -109,8 +109,6 @@ begin
 		centers.time[k] = 40 + (1/35)*distance;
 		centers.cost[k] = 5 * centers.time[k]; 
 	end
-
-	model_frame = DataFrame(dem1=epicenters.demand_itm1, dem2=epicenters.demand_itm2, prob=epicenters.probability)
 	
 end
 
@@ -136,11 +134,11 @@ begin
 
 	@constraint(main_model,[s=1:s_epicenters,j=1:num_centers,k=1:num_items],f[s,j,k]*epicenters.demand_itm1[s] <= Q[k,j])
 	@constraint(main_model, [j=1:num_centers],sum(item.volume[k]*Q[k,j] for j=1:num_centers, k=1:num_items) <= centers.capacity[j])
+	#@constraint[main_model, [j=1:num_centers,k=1:num_items], sum()]
 	#@constraint
 	#@constraint
 	#@constraint
-	#@constraint
-	#@constraint
+	@constraint(main_model, [s=1:s_epicenters,j=1:num_centers,k=1:num_items], f[s,j,k] >= 0)
 	#@constraint
 	optimize!(main_model)
 end
@@ -156,25 +154,6 @@ epicenters.demand_itm1[1]
 
 # ╔═╡ 20c4e664-ffa7-4b6d-9702-68869ca7b727
 
-
-# ╔═╡ 63c36506-e421-4f3f-8761-997f02814be9
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	#FF = zeros(size(item,1),size(item,1),size(centers,1))
-	model4 = Model(HiGHS.Optimizer)
-	@variable(model4,FF[size(item,1),size(item,1),size(centers,1)])
-	@objective(model4,Max,
-for i=1:size(item,1)
-	for j=1:size(item,1)
-		for k=1:size(centers,1) 					println(sum(epicenters.probability[k]*epicenters.demand_itm1[k]*item.Benefits_L1[j]*item.LR[j])*FF[i,j,k])
-		end
-	end
-end
-			)
-	
-end
-  ╠═╡ =#
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -708,6 +687,5 @@ version = "17.4.0+0"
 # ╠═257fc0d2-8474-4645-a9a9-b970b813fa1b
 # ╠═7f6f3f9d-f578-4a2a-a14e-0d4eb4dba140
 # ╠═20c4e664-ffa7-4b6d-9702-68869ca7b727
-# ╠═63c36506-e421-4f3f-8761-997f02814be9
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

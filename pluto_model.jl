@@ -132,12 +132,12 @@ begin
 	@variable(main_model,Q[1:num_items,1:num_centers],Int);
 	@variable(main_model,X,Bin);
 
-	@objective(main_model,Max, sum(epicenters.probability[s]*epicenters.demand_itm1[s]*item.Benefits_L1[k]*item.LR[k]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items))
+	@objective(main_model,Max, sum(epicenters.probability[s]*(epicenters.demand_itm1[s]*item.Benefits_L1[k]*item.LR[k]+epicenters.demand_itm2[s]*item.Benefits_L2[k]*item.UR[k])*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items))
 
-	@constraint(main_model,[s=1:s_epicenters,j=1:num_centers,k=1:num_items],f[s,j,k]*epicenters.demand_itm1[s] <= Q[k,j])
+	@constraint(main_model,[s=1:s_epicenters,j=1:num_centers,k=1:num_items],f[s,j,k]*(epicenters.demand_itm1[s]+epicenters.demand_itm2[s]) <= Q[k,j])
 	@constraint(main_model, [j=1:num_centers],sum(item.volume[k]*Q[k,j] for j=1:num_centers, k=1:num_items) <= centers.capacity[j])
 	@constraint(main_model, [j=1:num_centers,k=1:num_items], sum(centers.price[j] + sum(Q[k,j]*item.cost[k] for j=1:num_centers, k=1:num_items) for j=1:num_centers, k=1:num_items) <= B0)
-	@constraint(main_model, sum(epicenters.demand_itm1[s]*centers.item_cost[s]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= B1)
+	@constraint(main_model, sum((epicenters.demand_itm1[s]+epicenters.demand_itm2[s])*centers.item_cost[s]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= B1)
 	@constraint(main_model, sum(f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= 1) ## TODO idk tady ma byt suma jen pres j 
 	@constraint(main_model, [s=1:s_epicenters,j=1:num_centers,k=1:num_items], f[s,j,k] >= 0)
 	

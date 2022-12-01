@@ -20,6 +20,7 @@ begin
 	n = size(events,1);
 	k = 4; # pocet clusteru podle research paperu 167
 	P = sum(events.Deaths)/k
+	disaster_impact_levels = 4;
 	"""
     haversine(lat1, long1, lat2, long2, r = 6372.8)
 
@@ -50,11 +51,11 @@ begin
 	@objective(model, Min, sum(dm[i, j] * z[i, j] for i in 1:n, j in 1:i));
 	optimize!(model)
 
-	events.Group = zeros(n);
+	events.Cluster = zeros(n);
 	
 	for i in 1:n, j in 1:k
 	    if round(Int, value(x[i, j])) == 1
-	        events.Group[i] = j
+	        events.Cluster[i] = j
 	    end
 	end
 end
@@ -62,7 +63,7 @@ end
 # ╔═╡ e9921d68-d992-4da8-b73e-81cb47a12048
 begin
 	
-	events_grouped = groupby(events, :Group);
+	events_grouped = groupby(events, :Cluster);
 	epicenters = combine(events_grouped, :Latitude => mean, :Longitude => mean, :Deaths => sum)
 	epicenters.demand_itm1 = zeros(size(epicenters,1)); 
 	epicenters.demand_itm2 = zeros(size(epicenters,1));
@@ -76,6 +77,8 @@ begin
 	for k=1:size(epicenters,1)
 		epicenters.probability[k] = (epicenters.Deaths_sum[k])^(-1);
 	end
+
+	## impact levels 
 	
 end
 #TODO impact levels --> Grouping by number of deaths, expected demands for items
@@ -108,8 +111,24 @@ begin
 	
 end
 
-# ╔═╡ 7a2ecf58-af02-4819-8f5f-15f5f41c07e4
+# ╔═╡ 992a18a7-b38b-4374-8262-77299e695d05
+## definovana centra 
+#=
+	- predem stanoveny pocet 
+	- v svetovych populacnich centrech
+	- centra definovana rucne 
+	- pro kazde centrum item cost a time do epicentra (mozna do separatnich matic)
+	- POIs v openstreetmap
+=#
 
+#49.1544722N, 16.5618175E
+#51.7556622N, 0.7854503E
+begin 
+	names = ["CZ","UK"]
+	lats=[49.1544722, 51.7556622]
+	lons=[16.5618175, 0.7854503]
+	ccenters = DataFrame(Names=names[:,1], lat=lats[:,1], lon=lons[:,1])
+end
 
 # ╔═╡ f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 centers
@@ -670,7 +689,7 @@ version = "17.4.0+0"
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
 # ╠═e1c2c2af-2eee-41b7-8bf0-9050d4082d70
 # ╠═3cd30692-280e-4188-815c-fcab161a920d
-# ╠═7a2ecf58-af02-4819-8f5f-15f5f41c07e4
+# ╠═992a18a7-b38b-4374-8262-77299e695d05
 # ╠═f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 # ╠═5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 # ╟─00000000-0000-0000-0000-000000000001

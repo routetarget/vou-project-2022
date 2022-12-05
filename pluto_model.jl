@@ -93,29 +93,6 @@ end
 # ╔═╡ e1c2c2af-2eee-41b7-8bf0-9050d4082d70
 epicenters
 
-# ╔═╡ 3cd30692-280e-4188-815c-fcab161a920d
-## lokace center, na 1 scenar nalezi 1 centrum pro jednoduchost zatim
-begin
-	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), price = 100000, capacity=100000, time = zeros(size(epicenters,1)), item_cost = zeros(size(epicenters,1)))
-	#posun = rand[-2:2];
-	for k=1:size(epicenters,1)
-		centers.lat[k] = epicenters.Latitude_mean[k] + rand(-2:2)
-		centers.lon[k] = epicenters.Longitude_mean[k] + rand(-2:2)
-	end
-	## time and cost from center to demand point 
-	for k=1:size(centers,1)
-		distance = haversine(epicenters.Latitude_mean[k],epicenters.Longitude_mean[k],centers.lat[k],centers.lon[k]);
-		centers.time[k] = 40 + (1/35)*distance;
-		centers.item_cost[k] = 5 * centers.time[k]; 
-	end
-	
-end
-
-# ╔═╡ eebf7e50-daac-4623-9b7c-784c4530ef30
-begin
-	function distances(df::DataFrame)
-end
-
 # ╔═╡ 992a18a7-b38b-4374-8262-77299e695d05
 ## definovana centra 
 #=
@@ -163,12 +140,6 @@ end
 # ╔═╡ 32387f7a-ddad-4090-8adc-2b46ef956528
 costs
 
-# ╔═╡ 81f11ff1-7fcf-495d-90ac-c3dd85d7791c
-all_centers
-
-# ╔═╡ f8c3b134-a7c0-4eda-af88-0cdcde29a31c
-centers
-
 # ╔═╡ 5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 ## model
 begin
@@ -191,12 +162,38 @@ begin
 	@constraint(main_model,[s=1:s_epicenters,j=1:num_centers,k=1:num_items],f[s,j,k]*(epicenters.demand_itm1[s]+epicenters.demand_itm2[s]) <= Q[k,j])
 	@constraint(main_model, [j=1:num_centers],sum(item.volume[k]*Q[k,j] for j=1:num_centers, k=1:num_items) <= centers.capacity[j])
 	@constraint(main_model, [j=1:num_centers,k=1:num_items], sum(centers.price[j] + sum(Q[k,j]*item.cost[k] for j=1:num_centers, k=1:num_items) for j=1:num_centers, k=1:num_items) <= B0)
-	@constraint(main_model, sum((epicenters.demand_itm1[s]+epicenters.demand_itm2[s])*centers.item_cost[s]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= B1)
+	@constraint(main_model, sum((epicenters.demand_itm1[s]+epicenters.demand_itm2[s])*costs[j,k]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= B1)
 	@constraint(main_model, sum(f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= 1) ## TODO idk tady ma byt suma jen pres j 
 	@constraint(main_model, [s=1:s_epicenters,j=1:num_centers,k=1:num_items], f[s,j,k] >= 0)
 	
 	optimize!(main_model)
 	solution_summary(main_model, verbose=true)
+end
+
+# ╔═╡ 3cd30692-280e-4188-815c-fcab161a920d
+# ╠═╡ disabled = true
+#=╠═╡
+## lokace center, na 1 scenar nalezi 1 centrum pro jednoduchost zatim
+begin
+	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), price = 100000, capacity=100000, time = zeros(size(epicenters,1)), item_cost = zeros(size(epicenters,1)))
+	#posun = rand[-2:2];
+	for k=1:size(epicenters,1)
+		centers.lat[k] = epicenters.Latitude_mean[k] + rand(-2:2)
+		centers.lon[k] = epicenters.Longitude_mean[k] + rand(-2:2)
+	end
+	## time and cost from center to demand point 
+	for k=1:size(centers,1)
+		distance = haversine(epicenters.Latitude_mean[k],epicenters.Longitude_mean[k],centers.lat[k],centers.lon[k]);
+		centers.time[k] = 40 + (1/35)*distance;
+		centers.item_cost[k] = 5 * centers.time[k]; 
+	end
+	
+end
+  ╠═╡ =#
+
+# ╔═╡ 60483268-d9de-46a5-af89-40a3b5407f31
+begin
+	centers = all_centers;
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -725,12 +722,10 @@ version = "17.4.0+0"
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
 # ╠═e1c2c2af-2eee-41b7-8bf0-9050d4082d70
 # ╠═3cd30692-280e-4188-815c-fcab161a920d
-# ╠═eebf7e50-daac-4623-9b7c-784c4530ef30
 # ╠═992a18a7-b38b-4374-8262-77299e695d05
 # ╠═ba7cef96-71fe-4add-9577-165ecead56e1
+# ╠═60483268-d9de-46a5-af89-40a3b5407f31
 # ╠═32387f7a-ddad-4090-8adc-2b46ef956528
-# ╠═81f11ff1-7fcf-495d-90ac-c3dd85d7791c
-# ╠═f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 # ╠═5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

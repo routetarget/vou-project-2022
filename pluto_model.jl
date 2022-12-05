@@ -111,6 +111,11 @@ begin
 	
 end
 
+# ╔═╡ eebf7e50-daac-4623-9b7c-784c4530ef30
+begin
+	function distances(df::DataFrame)
+end
+
 # ╔═╡ 992a18a7-b38b-4374-8262-77299e695d05
 ## definovana centra 
 #=
@@ -121,14 +126,45 @@ end
 	- POIs v openstreetmap
 =#
 
-#49.1544722N, 16.5618175E
-#51.7556622N, 0.7854503E
+#=
+CENTwRA:
+ 	49.1544722N, 16.5618175E CZ 
+	51.7556622N, 0.7854503E UK
+	23.3455725N, 55.0139658E UAE
+	23.5874367N, 72.4163097E India 
+	30.0469497S, 25.5706067E South Africa
+	10.5129686N, 41.3909192E Ethiopia 
+	33.9645825N, 117.1526378E China 1 
+	21.9667750N, 110.0334972E China 2 
+	4.8975397N, 70.3620106W Colomia 
+	36.1172094S, 59.9030264W Argentina 
+=#
 begin 
-	names = ["CZ","UK"]
-	lats=[49.1544722, 51.7556622]
-	lons=[16.5618175, 0.7854503]
-	ccenters = DataFrame(Names=names[:,1], lat=lats[:,1], lon=lons[:,1])
+	all_centers = CSV.read("data/centra.csv", DataFrame);
+	p = fill(100000, nrow(all_centers));
+	all_centers[:,:price] = p;
+	all_centers[:,:capacity] = p;
 end
+
+# ╔═╡ ba7cef96-71fe-4add-9577-165ecead56e1
+begin 
+	distances = zeros(size(all_centers,1), size(epicenters,1));
+	costs = zeros(size(all_centers,1), size(epicenters,1));
+	times = zeros(size(all_centers,1), size(epicenters,1));
+	for i=1:size(distances,1)
+		for j=1:size(distances,2)
+			distances[i,j] = haversine(epicenters.Latitude_mean[j],epicenters.Longitude_mean[j],all_centers.lat[i],all_centers.lon[i]);
+			times[i,j] = 40 + (1/804.7)*distances[i,j];
+			costs[i,j] = 5 * times[i,j];
+		end
+	end
+end
+
+# ╔═╡ 32387f7a-ddad-4090-8adc-2b46ef956528
+costs
+
+# ╔═╡ 81f11ff1-7fcf-495d-90ac-c3dd85d7791c
+all_centers
 
 # ╔═╡ f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 centers
@@ -689,7 +725,11 @@ version = "17.4.0+0"
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
 # ╠═e1c2c2af-2eee-41b7-8bf0-9050d4082d70
 # ╠═3cd30692-280e-4188-815c-fcab161a920d
+# ╠═eebf7e50-daac-4623-9b7c-784c4530ef30
 # ╠═992a18a7-b38b-4374-8262-77299e695d05
+# ╠═ba7cef96-71fe-4add-9577-165ecead56e1
+# ╠═32387f7a-ddad-4090-8adc-2b46ef956528
+# ╠═81f11ff1-7fcf-495d-90ac-c3dd85d7791c
 # ╠═f8c3b134-a7c0-4eda-af88-0cdcde29a31c
 # ╠═5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 # ╟─00000000-0000-0000-0000-000000000001

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.14
+# v0.19.16
 
 using Markdown
 using InteractiveUtils
@@ -8,9 +8,8 @@ using InteractiveUtils
 using JuMP, DataFrames, HiGHS, LinearAlgebra, CSV, Statistics
 
 # ╔═╡ f3cbbf9e-86e6-4b56-846b-b64c9cf85780
-# load data 
 begin
-	events = CSV.read("data/data.csv",DataFrame, limit=20)
+	events = CSV.read("data/data.csv",DataFrame, limit=25)
 end
 
 # ╔═╡ eef3114f-196f-4642-9968-c9ff29a073a5
@@ -21,20 +20,13 @@ begin
 	k = 4; # pocet clusteru podle research paperu 167
 	P = sum(events.Deaths)/k
 	disaster_impact_levels = 4;
-	"""
-    haversine(lat1, long1, lat2, long2, r = 6372.8)
 
-	Compute the haversine distance between two points on a sphere of radius `r`,
-	where the points are given by the latitude/longitude pairs `lat1/long1` and
-	`lat2/long2` (in degrees).
-	"""
 	function haversine(lat1, long1, lat2, long2, r = 6372.8)
 	    lat1, long1 = deg2rad(lat1), deg2rad(long1)
 	    lat2, long2 = deg2rad(lat2), deg2rad(long2)
 	    hav(a, b) = sin((b - a) / 2)^2
 	    inner_term = hav(lat1, lat2) + cos(lat1) * cos(lat2) * hav(long1, long2)
 	    d = 2 * r * asin(sqrt(inner_term))
-	    # Round distance to nearest kilometer.
 	    return round(Int, d)
 	end
 
@@ -62,7 +54,6 @@ end
 
 # ╔═╡ e9921d68-d992-4da8-b73e-81cb47a12048
 begin
-	
 	events_grouped = groupby(events, :Cluster);
 	epicenters = combine(events_grouped, :Latitude => mean, :Longitude => mean, :Deaths => sum)
 	epicenters.demand_itm1 = zeros(size(epicenters,1)); 
@@ -76,33 +67,20 @@ begin
 	## Probability of occurance -- je to jen na random32.828232.8282
 	for k=1:size(epicenters,1)
 		epicenters.probability[k] = (epicenters.Deaths_sum[k])^(-1);
-	end
-
-	## impact levels 
-	
+	end	
 end
-#TODO impact levels --> Grouping by number of deaths, expected demands for items
 
 # ╔═╡ d24d4a18-0566-4d4b-b64b-464be7cb8237
 ## Definice itemu
 begin
-	item = DataFrame(Benefits_L1=[0.8,0.2], Benefits_L2=[0.4,0.6],LR=[48,72], UR=[96,144], cost=[18,20], volume=1)
-	items_m = DataFrame(Benefits_L1=[0.8,0.2], Benefits_L2=[0.4,0.6],LR=[48,72], UR=[96,144])
+	item = DataFrame(Benefits_L1=[0.8,0.2], Benefits_L2=[0.4,0.6],LR=[48,72], UR=[96,144], cost=[18,20], volume=1);
+	items_m = DataFrame(Benefits_L1=[0.8,0.2], Benefits_L2=[0.4,0.6],LR=[48,72], UR=[96,144]);
 end
 
 # ╔═╡ e1c2c2af-2eee-41b7-8bf0-9050d4082d70
 epicenters
 
 # ╔═╡ 992a18a7-b38b-4374-8262-77299e695d05
-## definovana centra 
-#=
-	- predem stanoveny pocet 
-	- v svetovych populacnich centrech
-	- centra definovana rucne 
-	- pro kazde centrum item cost a time do epicentra (mozna do separatnich matic)
-	- POIs v openstreetmap
-=#
-
 #=
 CENTwRA:
  	49.1544722N, 16.5618175E CZ 
@@ -137,14 +115,17 @@ begin
 	end
 end
 
+# ╔═╡ 60483268-d9de-46a5-af89-40a3b5407f31
+begin
+	centers = all_centers;
+end
+
 # ╔═╡ 32387f7a-ddad-4090-8adc-2b46ef956528
 costs
 
 # ╔═╡ 5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 ## model
 begin
-	# todo item 2 sumy -- nevim jak to funguje 
-	# iteracni promenne 
 	s_epicenters = size(epicenters,1)
 	num_items = size(item,1)
 	num_centers = size(centers,1)
@@ -168,32 +149,6 @@ begin
 	
 	optimize!(main_model)
 	solution_summary(main_model, verbose=true)
-end
-
-# ╔═╡ 3cd30692-280e-4188-815c-fcab161a920d
-# ╠═╡ disabled = true
-#=╠═╡
-## lokace center, na 1 scenar nalezi 1 centrum pro jednoduchost zatim
-begin
-	centers = DataFrame(lat = zeros(size(epicenters.Latitude_mean)), lon = zeros(size(epicenters.Longitude_mean)), price = 100000, capacity=100000, time = zeros(size(epicenters,1)), item_cost = zeros(size(epicenters,1)))
-	#posun = rand[-2:2];
-	for k=1:size(epicenters,1)
-		centers.lat[k] = epicenters.Latitude_mean[k] + rand(-2:2)
-		centers.lon[k] = epicenters.Longitude_mean[k] + rand(-2:2)
-	end
-	## time and cost from center to demand point 
-	for k=1:size(centers,1)
-		distance = haversine(epicenters.Latitude_mean[k],epicenters.Longitude_mean[k],centers.lat[k],centers.lon[k]);
-		centers.time[k] = 40 + (1/35)*distance;
-		centers.item_cost[k] = 5 * centers.time[k]; 
-	end
-	
-end
-  ╠═╡ =#
-
-# ╔═╡ 60483268-d9de-46a5-af89-40a3b5407f31
-begin
-	centers = all_centers;
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -721,7 +676,6 @@ version = "17.4.0+0"
 # ╠═e9921d68-d992-4da8-b73e-81cb47a12048
 # ╠═d24d4a18-0566-4d4b-b64b-464be7cb8237
 # ╠═e1c2c2af-2eee-41b7-8bf0-9050d4082d70
-# ╠═3cd30692-280e-4188-815c-fcab161a920d
 # ╠═992a18a7-b38b-4374-8262-77299e695d05
 # ╠═ba7cef96-71fe-4add-9577-165ecead56e1
 # ╠═60483268-d9de-46a5-af89-40a3b5407f31

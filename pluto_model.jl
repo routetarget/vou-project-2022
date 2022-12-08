@@ -9,7 +9,7 @@ using JuMP, DataFrames, HiGHS, LinearAlgebra, CSV, Statistics
 
 # ╔═╡ f3cbbf9e-86e6-4b56-846b-b64c9cf85780
 begin
-	events = CSV.read("data/data.csv",DataFrame, limit=25)
+	events = CSV.read("data/data2.csv",DataFrame, limit=25)
 end
 
 # ╔═╡ eef3114f-196f-4642-9968-c9ff29a073a5
@@ -130,7 +130,7 @@ begin
 	num_items = size(item,1)
 	num_centers = size(centers,1)
 	B0 = 5000000; # pre disaster budget 
-	B1 = 1000000; # post distaster budget 
+	B1 = 100000000; # post distaster budget 
 	
 	
 	main_model = Model(HiGHS.Optimizer);
@@ -144,7 +144,8 @@ begin
 	@constraint(main_model, [j=1:num_centers],sum(item.volume[k]*Q[k,j] for j=1:num_centers, k=1:num_items) <= centers.capacity[j])
 	@constraint(main_model, [j=1:num_centers,k=1:num_items], sum(centers.price[j] + sum(Q[k,j]*item.cost[k] for j=1:num_centers, k=1:num_items) for j=1:num_centers, k=1:num_items) <= B0)
 	@constraint(main_model, sum((epicenters.demand_itm1[s]+epicenters.demand_itm2[s])*costs[j,k]*f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= B1)
-	@constraint(main_model, sum(f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= 1) ## TODO idk tady ma byt suma jen pres j 
+	@constraint(main_model, sum(f[j] for j=1:num_centers) <= 1)
+	#@constraint(main_model, sum(f[s,j,k] for s=1:s_epicenters, j=1:num_centers, k=1:num_items) <= 1) 
 	@constraint(main_model, [s=1:s_epicenters,j=1:num_centers,k=1:num_items], f[s,j,k] >= 0)
 	
 	optimize!(main_model)

@@ -121,7 +121,33 @@ begin
 end
 
 # ╔═╡ 32387f7a-ddad-4090-8adc-2b46ef956528
-costs
+times
+
+# ╔═╡ f5cc6ca4-6d60-4318-9d6d-57f5e72c64f9
+# centers which can fulfill a certain item (LR, UR)
+begin
+function in_level(matrix::Array,lower::Int,upper::Int)
+    result = []
+
+    # iterate over the rows of the matrix
+    for (i, row) in enumerate(matrix)
+        # iterate over the columns of the matrix
+        for (j, value) in enumerate(row)
+            # check if the value is within the defined range
+            if value >= lower && value <= upper
+                # if the value is within the range, append it to the result array
+                push!(result, (value, i, j))
+            end
+        end
+    end
+    return result
+end
+centra_item1 = DataFrame(in_level(times,item.LR[1],item.UR[1]))
+centra_item2 = DataFrame(in_level(times,item.LR[2],item.UR[2]))
+end
+
+# ╔═╡ 5d26f72c-bf09-414c-a8dd-b353d269a090
+centra_item1
 
 # ╔═╡ 5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 ## model
@@ -681,6 +707,8 @@ version = "17.4.0+0"
 # ╠═ba7cef96-71fe-4add-9577-165ecead56e1
 # ╠═60483268-d9de-46a5-af89-40a3b5407f31
 # ╠═32387f7a-ddad-4090-8adc-2b46ef956528
+# ╠═f5cc6ca4-6d60-4318-9d6d-57f5e72c64f9
+# ╠═5d26f72c-bf09-414c-a8dd-b353d269a090
 # ╠═5ddc04ee-5681-418a-a2a2-29d75b6e4fe6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

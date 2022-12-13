@@ -63,11 +63,26 @@ begin
 		epicenters.demand_itm1[k] = epicenters.Deaths_sum[k] * 0.3;
 		epicenters.demand_itm2[k] = epicenters.Deaths_sum[k] * 0.2;
 	end
+
+	function probability_col(column)
+	    column_sum = sum(column)
+	    probabilities = []
+	    for value in column
+	        probability = value / column_sum
+	        push!(probabilities, probability)
+	    end
+	    return probabilities
+	end
+
 	
 	## Probability of occurance -- je to jen na random32.828232.8282
-	for k=1:size(epicenters,1)
-		epicenters.probability[k] = (epicenters.Deaths_sum[k])^(-1);
-	end	
+	#for k=1:size(epicenters,1)
+	#	epicenters.probability[k] = (epicenters.Deaths_sum[k])^(-1);
+	#end
+
+	# Pravdepodobnost
+	probability = probability_col(epicenters[!,:Deaths_sum])
+	epicenters[!,:probability] = probability
 end
 
 # ╔═╡ d24d4a18-0566-4d4b-b64b-464be7cb8237
